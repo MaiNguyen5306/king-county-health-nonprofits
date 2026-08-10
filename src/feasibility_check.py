@@ -14,6 +14,13 @@ ZCTA_COUNTY_PATH = (
     / "tab20_zcta520_county20_natl.txt"
 )
 
+OUTPUT_PATH = (
+    PROJECT_ROOT
+    / "data"
+    / "processed"
+    / "king_county_health_candidates_preliminary.csv"
+)
+
 HEALTH_NTEE_GROUPS = ["E", "F", "G", "H"]
 KING_COUNTY_GEOID = "53033"
 
@@ -171,6 +178,33 @@ def main():
         )
     ].copy()
 
+    # Export selected candidate fields for manual review.
+    output_columns = [
+        "EIN",
+        "NAME",
+        "CITY",
+        "STATE",
+        "ZIP",
+        "ZIP5",
+        "NTEE_CD",
+        "NTEE_MAJOR",
+        "FILING_REQ_CD",
+        "TAX_PERIOD",
+        "ASSET_AMT",
+        "INCOME_AMT",
+        "REVENUE_AMT",
+    ]
+
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+
+    king_county_candidates = king_county_candidates.sort_values(
+        by=["NTEE_MAJOR", "NAME"]
+    )
+
+    king_county_candidates[output_columns].to_csv(
+        OUTPUT_PATH,
+        index=False,
+    )
     print(
         f"All Washington organizations: "
         f"{len(organizations):,}"
@@ -212,6 +246,7 @@ def main():
         .head(20)
         .to_string()
     )
+    print(f"Exported candidate file: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":
