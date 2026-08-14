@@ -97,8 +97,11 @@ def parse_xml(xml_path):
     root = ET.parse(xml_path).getroot()
 
     header = find_element(root, "ReturnHeader")
+    filer = find_element(header, "Filer")
     return_data = find_element(root, "ReturnData")
     form990 = find_element(return_data, "IRS990")
+    if filer is None:
+        raise ValueError("Filer was not found in ReturnHeader.")
 
     if header is None:
         raise ValueError("ReturnHeader was not found.")
@@ -127,32 +130,32 @@ def parse_xml(xml_path):
             header,
             "TaxYr",
         ),
-        "EIN_XML": first_text(
-            header,
+                "EIN_XML": first_text(
+            filer,
             "EIN",
         ),
         "ORGANIZATION_NAME": first_text(
-            header,
+            filer,
             "BusinessNameLine1Txt",
         ),
         "ADDRESS_LINE_1": first_text(
-            header,
+            filer,
             "AddressLine1Txt",
         ),
         "ADDRESS_LINE_2": first_text(
-            header,
+            filer,
             "AddressLine2Txt",
         ),
         "CITY": first_text(
-            header,
+            filer,
             "CityNm",
         ),
         "STATE": first_text(
-            header,
+            filer,
             "StateAbbreviationCd",
         ),
         "ZIP_CODE": first_text(
-            header,
+            filer,
             "ZIPCd",
         ),
         "MISSION": first_text(
