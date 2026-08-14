@@ -22,28 +22,53 @@ MAX_ATTEMPTS = 3
 
 
 def valid_zip(path):
-    """Check the ZIP directory without decompressing every XML file."""
+    """Check a ZIP directory without decompressing every XML file."""
     if not path.exists() or path.stat().st_size == 0:
         return False
 
     try:
         with zipfile.ZipFile(path) as archive:
             return len(archive.infolist()) > 0
-    except (zipfile.BadZipFile, OSError):
+    except (
+        zipfile.BadZipFile,
+        zipfile.LargeZipFile,
+        OSError,
+    ):
         return False
 
 
 def download_archive(url, destination):
     """Download one archive with retry and partial-download support."""
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    partial_path = destination.with_suffix(destination.suffix + ".part")
+    destination.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
+    partial_path = destination.with_suffix(
+        destination.suffix + ".part"
+    )
+
+    # Always check the completed destination first.
+    if valid_zip(destination):
+        print(f"SKIP valid archive: {destination.name}")
+
+        if partial_path.exists():
+            print(
+                f"  NOTE: redundant partial file exists: "
+                f"{partial_path.name}"
+            )
+
+        return
+
+    # Recover a completed file that still has the .part suffix.
     if valid_zip(partial_path):
         partial_path.replace(destination)
+
         print(
             f"RECOVERED completed archive: {destination.name} "
             f"({destination.stat().st_size / 1_048_576:,.1f} MB)"
         )
+
         return
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
@@ -73,17 +98,20 @@ def download_archive(url, destination):
             ) as response:
                 response.raise_for_status()
 
-                # Resume only when the server accepts the Range request.
+                # Append only if the server accepted the Range request.
                 if existing_bytes and response.status_code == 206:
                     mode = "ab"
                 else:
                     mode = "wb"
                     existing_bytes = 0
 
-                total_bytes = response.headers.get("Content-Length")
+                content_length = response.headers.get(
+                    "Content-Length"
+                )
+
                 total_bytes = (
-                    int(total_bytes) + existing_bytes
-                    if total_bytes
+                    int(content_length) + existing_bytes
+                    if content_length
                     else None
                 )
 
@@ -100,7 +128,10 @@ def download_archive(url, destination):
                         downloaded += len(chunk)
 
                         if total_bytes:
-                            percent = downloaded / total_bytes * 100
+                            percent = (
+                                downloaded / total_bytes * 100
+                            )
+
                             print(
                                 f"\r  {percent:6.2f}% "
                                 f"({downloaded / 1_048_576:,.1f} MB)",
@@ -110,9 +141,20 @@ def download_archive(url, destination):
 
                 print()
 
+            if total_bytes is not None:
+                actual_bytes = partial_path.stat().st_size
+
+                if actual_bytes != total_bytes:
+                    raise ValueError(
+                        f"Downloaded size mismatch for "
+                        f"{destination.name}: expected "
+                        f"{total_bytes:,} bytes, found "
+                        f"{actual_bytes:,} bytes."
+                    )
+
             if not valid_zip(partial_path):
                 raise ValueError(
-                    f"Downloaded file is not a valid ZIP: "
+                    f"Downloaded file is not a readable ZIP: "
                     f"{partial_path}"
                 )
 
@@ -122,6 +164,7 @@ def download_archive(url, destination):
                 f"COMPLETE: {destination.name} "
                 f"({destination.stat().st_size / 1_048_576:,.1f} MB)"
             )
+
             return
 
         except (
@@ -139,13 +182,17 @@ def download_archive(url, destination):
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Download required IRS Form 990 XML ZIP archives."
+        description=(
+            "Download required IRS Form 990 XML ZIP archives."
+        )
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Display planned downloads without downloading files.",
+        help=(
+            "Display selected manifest rows without downloading files."
+        ),
     )
 
     parser.add_argument(
@@ -200,16 +247,22 @@ def main():
     completed = 0
 
     for row in manifest.itertuples(index=False):
-        destination = PROJECT_ROOT / row.ARCHIVE_LOCAL_PATH
+        destination = (
+            PROJECT_ROOT
+            / row.ARCHIVE_LOCAL_PATH.strip()
+        )
 
         download_archive(
-            url=row.ARCHIVE_URL,
+            url=row.ARCHIVE_URL.strip(),
             destination=destination,
         )
 
         completed += 1
 
-    print(f"\nArchives processed successfully: {completed:,}")
+    print(
+        f"\nArchives processed successfully: "
+        f"{completed:,}"
+    )
 
 
 if __name__ == "__main__":
