@@ -225,6 +225,22 @@ def main():
 
     growth = growth.reset_index()
 
+    structural_change_notes = {
+        "911935159": (
+            "Seattle Cancer Care Alliance and Fred Hutchinson "
+            "Cancer Research Center combined to form Fred Hutchinson "
+            "Cancer Center in April 2022; 2021-2023 growth is not "
+            "fully comparable."
+        )
+    }
+
+    growth["STRUCTURAL_CHANGE_FLAG"] = (
+        growth["EIN"].isin(structural_change_notes)
+    )
+
+    growth["STRUCTURAL_CHANGE_NOTE"] = (
+        growth["EIN"].map(structural_change_notes)
+    )
     category_summary = (
         growth.groupby("NTEE_MAJOR")
         .agg(
