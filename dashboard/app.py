@@ -31,10 +31,10 @@ NTEE_LABELS = {
 }
 
 COLORS = {
-    "navy": "#2B5F85",
-    "teal": "#2A9D8F",
+    "navy": "#2161F9",
+    "teal": "#53EEEC",
     "orange": "#E76F51",
-    "gold": "#E9C46A",
+    "gold": "#F9C46A",
 }
 
 
@@ -44,6 +44,61 @@ st.set_page_config(
     layout="wide",
 )
 
+st.markdown(
+    """
+    <style>
+    /* White headings and field labels on the blue sidebar. */
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
+        color: #FFFFFF !important;
+    }
+
+    /* Dark text inside white dropdown and multiselect controls. */
+    section[data-testid="stSidebar"] [data-baseweb="select"] * {
+        color: #172033 !important;
+    }
+
+    /* Softer white for explanatory sidebar captions. */
+    section[data-testid="stSidebar"]
+    [data-testid="stCaptionContainer"] p {
+        color: rgba(255, 255, 255, 0.82) !important;
+    }
+
+    /* Reduce empty space above the main dashboard. */
+    [data-testid="stMainBlockContainer"] {
+        padding-top: 2rem !important;
+    }
+
+    /* Reduce empty space above the sidebar heading. */
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 1.5rem !important;
+    }
+    /* Pastel coral KPI cards. */
+    [data-testid="stMetric"] {
+        background-color: #FDE2D6;
+        border: 1px solid #F7CDBD !important;
+        border-radius: 20px;
+        padding: 1rem 1.25rem;
+        min-height: 112px;
+    }
+
+    /* KPI labels. */
+    [data-testid="stMetricLabel"] {
+        color: #667085;
+    }
+
+    /* KPI numbers. */
+    [data-testid="stMetricValue"] {
+        color: #172033;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
 def clean_ein(series):
     """Normalize EIN values as nine-character strings."""
@@ -139,6 +194,11 @@ def standard_layout(figure, height=420):
 data = load_data()
 
 
+current_section = st.session_state.get(
+    "dashboard_section",
+    "Sector overview",
+)
+
 st.sidebar.header("Dashboard filters")
 
 available_groups = sorted(
@@ -152,23 +212,41 @@ selected_groups = st.sidebar.multiselect(
     format_func=lambda value: NTEE_LABELS[value],
 )
 
-selected_year = st.sidebar.selectbox(
-    "Snapshot tax year",
-    options=sorted(
-        data["TAX_YEAR_ANALYSIS"].unique(),
-        reverse=True,
-    ),
+available_years = sorted(
+    data["TAX_YEAR_ANALYSIS"].unique(),
+    reverse=True,
 )
 
-include_structural_change = st.sidebar.checkbox(
-    "Include SCCA–Fred Hutch",
-    value=True,
-    help=(
-        "This organization underwent a major structural "
-        "change in April 2022. Its financial growth is not "
-        "fully comparable across the period."
-    ),
-)
+if current_section == "Organization explorer":
+    selected_year = available_years[0]
+    include_structural_change = True
+
+    st.sidebar.caption(
+        "Health categories determine which organizations "
+        "are available. Organization charts always show "
+        "the complete 2021–2023 trend."
+    )
+else:
+    selected_year = st.sidebar.selectbox(
+        "Snapshot tax year",
+        options=available_years,
+    )
+
+    include_structural_change = st.sidebar.checkbox(
+        "Include SCCA–Fred Hutch",
+        value=True,
+        help=(
+            "This organization underwent a major structural "
+            "change in April 2022. Its financial growth is not "
+            "fully comparable across the period."
+        ),
+    )
+
+    st.sidebar.caption(
+        "SCCA and Fred Hutch combined in April 2022. "
+        "Uncheck this option to view aggregate trends "
+        "without this structural change."
+    )
 
 
 if not selected_groups:
@@ -211,69 +289,110 @@ st.caption(
 )
 
 
-if include_structural_change:
-    st.info(
-        "Seattle Cancer Care Alliance and Fred Hutchinson "
-        "Cancer Research Center combined in April 2022. "
-        "Use the sidebar checkbox to view aggregate results "
-        "without this structural change."
+if current_section != "Organization explorer":
+    organization_count = snapshot["EIN_CLEAN"].nunique()
+    total_revenue = snapshot["TOTAL_REVENUE"].sum()
+    total_expenses = snapshot["TOTAL_EXPENSES"].sum()
+
+    negative_margin_count = (
+        snapshot["OPERATING_SURPLUS"] < 0
+    ).sum()
+
+    negative_margin_rate = (
+        negative_margin_count / organization_count
+        if organization_count
+        else 0
     )
 
 
-organization_count = snapshot["EIN_CLEAN"].nunique()
-total_revenue = snapshot["TOTAL_REVENUE"].sum()
-total_expenses = snapshot["TOTAL_EXPENSES"].sum()
+    column_1, column_2, column_3, column_4 = st.columns(4)
 
-negative_margin_count = (
-    snapshot["OPERATING_SURPLUS"] < 0
-).sum()
+    column_1.metric(
+        "Organizations",
+        f"{organization_count:,}",
+        border=True,
+    )
 
-negative_margin_rate = (
-    negative_margin_count / organization_count
-    if organization_count
-    else 0
+    column_2.metric(
+        f"{selected_year} revenue",
+        f"${total_revenue / 1_000_000_000:.2f}B",
+        border=True,
+    )
+
+    column_3.metric(
+        f"{selected_year} expenses",
+        f"${total_expenses / 1_000_000_000:.2f}B",
+        border=True,
+    )
+
+    column_4.metric(
+        "Operating deficits",
+        f"{negative_margin_count:,}",
+        delta=f"{negative_margin_rate:.0%} of organizations",
+        delta_color="off",
+        border=True,
+    )
+
+st.markdown(
+    """
+    <style>
+    .st-key-dashboard_section {
+        border-bottom: 1px solid #30333d;
+    }
+
+    .st-key-dashboard_section div[role="radiogroup"] {
+        gap: 0;
+    }
+
+    .st-key-dashboard_section button {
+        background: transparent !important;
+        border: none !important;
+        border-bottom: 2px solid transparent !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding-left: 14px !important;
+        padding-right: 14px !important;
+    }
+
+    .st-key-dashboard_section button:hover {
+        color: #ff4b4b !important;
+        border-bottom-color: #ff4b4b !important;
+    }
+
+    .st-key-dashboard_section button[aria-pressed="true"],
+    .st-key-dashboard_section button[aria-checked="true"] {
+        color: #ff4b4b !important;
+        border-bottom-color: #ff4b4b !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-
-column_1, column_2, column_3, column_4 = st.columns(4)
-
-column_1.metric(
-    "Organizations",
-    f"{organization_count:,}",
-)
-
-column_2.metric(
-    f"{selected_year} revenue",
-    f"${total_revenue / 1_000_000_000:.2f}B",
-)
-
-column_3.metric(
-    f"{selected_year} expenses",
-    f"${total_expenses / 1_000_000_000:.2f}B",
-)
-
-column_4.metric(
-    "Operating deficits",
-    f"{negative_margin_count:,}",
-    delta=f"{negative_margin_rate:.0%} of organizations",
-    delta_color="off",
-)
-
-
-overview_tab, category_tab, organization_tab = st.tabs(
-    [
+selected_section = st.segmented_control(
+    "Dashboard section",
+    options=[
         "Sector overview",
         "Category comparison",
         "Organization explorer",
-    ]
+    ],
+    default="Sector overview",
+    key="dashboard_section",
+    selection_mode="single",
+    required=True,
+    label_visibility="collapsed",
 )
 
-
-with overview_tab:
+if selected_section == "Sector overview":
     left_column, right_column = st.columns(2)
 
     with left_column:
         st.subheader("Revenue sensitivity")
+
+        st.caption(
+            "The April 2022 SCCA–Fred Hutch combination "
+            "affects comparisons across years."
+        )
 
         full_trend = (
             category_filtered.groupby(
@@ -520,7 +639,7 @@ with overview_tab:
     )
 
 
-with category_tab:
+elif selected_section == "Category comparison":
     st.subheader(
         "Median financial growth by health category"
     )
@@ -652,7 +771,7 @@ with category_tab:
     )
 
 
-with organization_tab:
+else:
     latest_names = (
         filtered.sort_values(
             [
