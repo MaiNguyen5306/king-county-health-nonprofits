@@ -108,7 +108,7 @@ king-county-health-nonprofits/
   src/                 # Download, extraction, parsing, and analysis scripts
   requirements.txt     # Python dependencies
   README.md
-``
+```
 
 ## Technology Stack
 
