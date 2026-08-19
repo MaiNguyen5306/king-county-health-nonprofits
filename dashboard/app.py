@@ -127,7 +127,9 @@ st.markdown(
         border: 1px solid #F3BFC3 !important;
         border-radius: 16px !important;
         padding: 0.95rem 1.15rem !important;
-        min-height: 106px;
+        height: 150px !important;
+        min-height: 150px !important;
+        box-sizing: border-box !important;
         box-shadow: 0 1px 2px rgba(23, 32, 51, 0.03);
     }
 
@@ -624,6 +626,11 @@ if selected_section == "Sector overview":
 
     with right_column:
         st.subheader("Operating pressure")
+
+        st.caption(
+        "Organizations with expenses above revenue became "
+        "more common from 2021 through 2023."
+        )
 
         deficit_summary = (
             filtered.assign(
