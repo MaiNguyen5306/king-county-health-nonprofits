@@ -31,10 +31,15 @@ NTEE_LABELS = {
 }
 
 COLORS = {
-    "navy": "#2161F9",
-    "teal": "#53EEEC",
-    "orange": "#E76F51",
-    "gold": "#F9C46A",
+    "navy": "#2563EB",
+    "teal": "#53D8D8",
+    "pink_accent": "#F3BFC3",
+    "pink_background": "#FFF0F1",
+    "sidebar": "#EDF6FF",
+    "white": "#FFFFFF",
+    "text_primary": "#172033",
+    "text_secondary": "#667085",
+    "grid": "#E5EAF0",
 }
 
 
@@ -47,52 +52,126 @@ st.set_page_config(
 st.markdown(
     """
     <style>
-    /* White headings and field labels on the blue sidebar. */
+    /* ---------- Overall page proportions ---------- */
+    [data-testid="stMainBlockContainer"] {
+        max-width: 1280px;
+        padding-top: 1.6rem !important;
+        padding-bottom: 2.5rem !important;
+    }
+
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 1.4rem !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    h1 {
+        color: #172033 !important;
+        font-size: 2.35rem !important;
+        line-height: 1.12 !important;
+        font-weight: 750 !important;
+        letter-spacing: -0.025em !important;
+        margin-bottom: 0.45rem !important;
+    }
+
+    h2, h3 {
+        color: #172033 !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.015em !important;
+    }
+
+    /* ---------- Sidebar ---------- */
+
+    /* Sidebar headings, labels, and checkbox text. */
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] {
-        color: #FFFFFF !important;
-    }
-
-    /* Dark text inside white dropdown and multiselect controls. */
-    section[data-testid="stSidebar"] [data-baseweb="select"] * {
+    section[data-testid="stSidebar"]
+    [data-testid="stWidgetLabel"] {
         color: #172033 !important;
     }
 
-    /* Softer white for explanatory sidebar captions. */
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        font-weight: 700 !important;
+    }
+
+    /* White dropdown and multiselect containers. */
+    section[data-testid="stSidebar"]
+    [data-baseweb="select"] > div {
+        background-color: #FFFFFF !important;
+        border-color: #D7E7F7 !important;
+    }
+
+    /* Dark text inside dropdown and multiselect containers. */
+    section[data-testid="stSidebar"]
+    [data-baseweb="select"] * {
+        color: #172033 !important;
+    }
+
+    /* Rounded sidebar controls. */
+    section[data-testid="stSidebar"]
+    [data-baseweb="select"],
+    section[data-testid="stSidebar"]
+    [data-baseweb="base-input"] {
+        border-radius: 10px !important;
+    }
+
+    /* Supporting sidebar explanation. */
     section[data-testid="stSidebar"]
     [data-testid="stCaptionContainer"] p {
-        color: rgba(255, 255, 255, 0.82) !important;
+        color: #667085 !important;
+        line-height: 1.55 !important;
     }
-
-    /* Reduce empty space above the main dashboard. */
-    [data-testid="stMainBlockContainer"] {
-        padding-top: 2rem !important;
-    }
-
-    /* Reduce empty space above the sidebar heading. */
-    [data-testid="stSidebarUserContent"] {
-        padding-top: 1.5rem !important;
-    }
-    /* Pastel coral KPI cards. */
+    /* ---------- KPI cards ---------- */
     [data-testid="stMetric"] {
-        background-color: #FDE2D6;
-        border: 1px solid #F7CDBD !important;
-        border-radius: 20px;
-        padding: 1rem 1.25rem;
-        min-height: 112px;
+        background-color: #FFF0F1;
+        border: 1px solid #F3BFC3 !important;
+        border-radius: 16px !important;
+        padding: 0.95rem 1.15rem !important;
+        min-height: 106px;
+        box-shadow: 0 1px 2px rgba(23, 32, 51, 0.03);
     }
 
-    /* KPI labels. */
-    [data-testid="stMetricLabel"] {
-        color: #667085;
+    [data-testid="stMetricLabel"] p {
+        color: #667085 !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
     }
 
-    /* KPI numbers. */
     [data-testid="stMetricValue"] {
-        color: #172033;
+        color: #172033 !important;
+        font-weight: 700 !important;
+        letter-spacing: -0.02em !important;
+    }
+
+    [data-testid="stMetricDelta"] {
+        background-color: #FAD8DC;
+        border-radius: 999px;
+        padding: 0.15rem 0.45rem;
+        width: fit-content;
+    }
+
+    /* ---------- Chart and table frames ---------- */
+    [data-testid="stPlotlyChart"] {
+        background-color: #FFFFFF;
+        border: 1px solid #E5EAF0;
+        border-radius: 14px;
+        padding: 0.35rem 0.55rem 0.15rem 0.55rem;
+        box-shadow: 0 1px 2px rgba(23, 32, 51, 0.025);
+        overflow: hidden;
+    }
+
+    [data-testid="stDataFrame"] {
+        border: 1px solid #E5EAF0;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    [data-testid="stExpander"] {
+        border-color: #E5EAF0 !important;
+        border-radius: 12px !important;
     }
 
     </style>
@@ -186,6 +265,30 @@ def standard_layout(figure, height=420):
         hoverlabel=dict(
             namelength=-1,
         ),
+        paper_bgcolor=COLORS["white"],
+        plot_bgcolor=COLORS["white"],
+        font=dict(
+            color=COLORS["text_secondary"],
+            family="Arial, sans-serif",
+            size=12,
+        ),
+        hovermode="closest",
+    )
+
+    figure.update_xaxes(
+        showline=False,
+        zeroline=False,
+        gridcolor=COLORS["grid"],
+        tickfont=dict(color=COLORS["text_secondary"]),
+        title_font=dict(color=COLORS["text_secondary"]),
+    )
+
+    figure.update_yaxes(
+        showline=False,
+        zeroline=False,
+        gridcolor=COLORS["grid"],
+        tickfont=dict(color=COLORS["text_secondary"]),
+        title_font=dict(color=COLORS["text_secondary"]),
     )
 
     return figure
@@ -210,6 +313,7 @@ selected_groups = st.sidebar.multiselect(
     options=available_groups,
     default=available_groups,
     format_func=lambda value: NTEE_LABELS[value],
+    key="health_categories",
 )
 
 available_years = sorted(
@@ -235,6 +339,7 @@ else:
     include_structural_change = st.sidebar.checkbox(
         "Include SCCA–Fred Hutch",
         value=True,
+        key="include_scca",
         help=(
             "This organization underwent a major structural "
             "change in April 2022. Its financial growth is not "
@@ -337,7 +442,9 @@ st.markdown(
     """
     <style>
     .st-key-dashboard_section {
-        border-bottom: 1px solid #30333d;
+        border-bottom: 1px solid #E5EAF0;
+        margin-top: 0.65rem;
+        margin-bottom: 0.75rem;
     }
 
     .st-key-dashboard_section div[role="radiogroup"] {
@@ -350,20 +457,45 @@ st.markdown(
         border-bottom: 2px solid transparent !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        padding-left: 14px !important;
-        padding-right: 14px !important;
+        color: #667085 !important;
+        font-size: 0.86rem !important;
+        font-weight: 900 !important;
+        padding: 0.55rem 1rem !important;
     }
 
     .st-key-dashboard_section button:hover {
-        color: #ff4b4b !important;
-        border-bottom-color: #ff4b4b !important;
+        color: #ff7983 !important;
+        border-bottom-color: #ff7983 !important;
     }
 
     .st-key-dashboard_section button[aria-pressed="true"],
     .st-key-dashboard_section button[aria-checked="true"] {
-        color: #ff4b4b !important;
-        border-bottom-color: #ff4b4b !important;
+        color: #ff7983 !important;
+        border-bottom-color: #ff7983 !important;
+        font-weight: 900 !important;
     }
+    /* Exact inspected structure for selected health categories. */
+    .st-key-health_categories
+    [data-testid="stMultiSelectTagsContainer"]
+    span[role="group"][aria-label="Selected values"] > * {
+        background: #F3C1C5 !important;
+        background-color: #F3C1C5 !important;
+        border: 1px solid #F3C1C5 !important;
+        border-radius: 8px !important;
+        color: #172033 !important;
+        -webkit-text-fill-color: #172033 !important;
+    }
+
+    .st-key-health_categories
+    [data-testid="stMultiSelectTagsContainer"]
+    span[role="group"][aria-label="Selected values"] > * * {
+        color: #172033 !important;
+        fill: #172033 !important;
+        stroke: #172033 !important;
+        -webkit-text-fill-color: #172033 !important;
+    }
+
+
     </style>
     """,
     unsafe_allow_html=True,
@@ -529,7 +661,7 @@ if selected_section == "Sector overview":
                 y=deficit_summary[
                     "DEFICIT_ORGANIZATIONS"
                 ],
-                marker_color=COLORS["orange"],
+                marker_color=COLORS["navy"],
                 text=[
                     (
                         f"{count} ({rate:.0%})"
@@ -594,7 +726,7 @@ if selected_section == "Sector overview":
                 "ORGANIZATION_NAME"
             ],
             orientation="h",
-            marker_color=COLORS["navy"],
+            marker_color=COLORS["teal"],
             text=[
                 f"${value / 1_000_000:,.0f}M"
                 for value in top_organizations[
@@ -739,7 +871,7 @@ elif selected_section == "Category comparison":
                 * 100
             ),
             name="Median expense growth",
-            marker_color=COLORS["orange"],
+            marker_color=COLORS["navy"],
             text=[
                 f"{value:.1%}"
                 for value in category_growth[
@@ -842,7 +974,7 @@ else:
             mode="lines+markers",
             name="Expenses",
             line=dict(
-                color=COLORS["orange"],
+            color=COLORS["navy"],
                 width=3,
             ),
             marker=dict(size=9),

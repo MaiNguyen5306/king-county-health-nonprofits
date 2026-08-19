@@ -6,11 +6,11 @@ secondaryBackgroundColor = "#F6F8FC"
 textColor = "#172033"
 borderColor = "#DDE3EC"
 showSidebarBorder = true
-chartCategoricalColors = ["#2161F9", "#E76F51", "#53EEEC"]
+chartCategoricalColors = ["#2161F9", "#2161F9", "#53EEEC"]
 
 [theme.sidebar]
-primaryColor = "#2161F9"
-backgroundColor = "#2161F9"
+primaryColor = "#2563EB"
+backgroundColor = "#add3ff"
 secondaryBackgroundColor = "#FFFFFF"
 textColor = "#172033"
-borderColor = "#FFFFFF"
+borderColor = "#add3ff"
