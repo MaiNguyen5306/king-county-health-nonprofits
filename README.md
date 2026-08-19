@@ -94,21 +94,21 @@ Only the compact processed datasets required by the public dashboard are stored 
 
 ```text
 king-county-health-nonprofits/
-â”œâ”€â”€ .streamlit/          # Streamlit theme configuration
-â”œâ”€â”€ dashboard/
-â”‚   â”œâ”€â”€ app.py           # Interactive Streamlit application
-â”‚   â””â”€â”€ data/            # Compact deployment datasets
-â”œâ”€â”€ data/
-â”‚   â”œâ”€â”€ raw/             # Local raw source files (Git-ignored)
-â”‚   â””â”€â”€ processed/       # Local analytical outputs (Git-ignored)
-â”œâ”€â”€ docs/                # Project documentation
-â”œâ”€â”€ notebooks/           # Exploratory analysis
-â”œâ”€â”€ reports/figures/     # Exported static visualizations
-â”œâ”€â”€ sql/                 # SQL work
-â”œâ”€â”€ src/                 # Download, extraction, parsing, and analysis scripts
-â”œâ”€â”€ requirements.txt     # Python dependencies
-â””â”€â”€ README.md
-```
+  .streamlit/          # Streamlit theme configuration
+  dashboard/
+    app.py             # Interactive Streamlit application
+    data/              # Compact deployment datasets
+  data/
+    raw/               # Local raw source files (Git-ignored)
+    processed/         # Local analytical outputs (Git-ignored)
+  docs/                # Project documentation
+  notebooks/           # Exploratory analysis
+  reports/figures/     # Exported static visualizations
+  sql/                 # SQL work
+  src/                 # Download, extraction, parsing, and analysis scripts
+  requirements.txt     # Python dependencies
+  README.md
+``
 
 ## Technology Stack
 
