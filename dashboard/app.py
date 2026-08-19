@@ -5,19 +5,16 @@ import plotly.graph_objects as go
 import streamlit as st
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+DASHBOARD_DIR = Path(__file__).resolve().parent
+DASHBOARD_DATA_DIR = DASHBOARD_DIR / "data"
 
 BALANCED_DATA_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
+    DASHBOARD_DATA_DIR
     / "form990_balanced_panel_2021_2023.csv"
 )
 
 SOURCE_PANEL_PATH = (
-    PROJECT_ROOT
-    / "data"
-    / "processed"
+    DASHBOARD_DATA_DIR
     / "king_county_form990_filing_panel_2019_2023.csv"
 )
 
