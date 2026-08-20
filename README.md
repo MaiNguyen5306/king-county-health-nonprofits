@@ -112,7 +112,7 @@ king-county-health-nonprofits/
 
 ## Technology Stack
 
-- **Python:** pandas, requests, ElementTree XML parsin
+- **Python:** pandas, requests, ElementTree XML parsing
 - **Visualization:** Plotly, Matplotlib, Seaborn
 - **Application:** Streamlit
 - **Version control and deployment:** Git, GitHub, Streamlit Community Cloud
