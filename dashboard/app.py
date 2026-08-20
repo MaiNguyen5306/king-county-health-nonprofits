@@ -27,6 +27,13 @@ NTEE_LABELS = {
     "H": "H — Medical research",
 }
 
+SIDEBAR_NTEE_LABELS = {
+    "E": "E — General health & rehab",
+    "F": "F — Mental health & crisis",
+    "G": "G — Disease & medical",
+    "H": "H — Medical research",
+}
+
 COLORS = {
     "navy": "#2563EB",
     "teal": "#53D8D8",
@@ -39,6 +46,13 @@ COLORS = {
     "grid": "#E5EAF0",
 }
 
+COMPOSITION_COLORS = [
+    "#195FB8",  # Darkest: largest category
+    "#2E91CE",
+    "#53C4C9",
+    "#B4E7E8",  # Lightest: smallest category
+]
+
 
 st.set_page_config(
     page_title="King County Health Nonprofits",
@@ -50,10 +64,14 @@ st.markdown(
     """
     <style>
     /* ---------- Overall page proportions ---------- */
-    [data-testid="stMainBlockContainer"] {
-        max-width: 1280px;
-        padding-top: 1.6rem !important;
-        padding-bottom: 2.5rem !important;
+    [data-testid="stMainBlockContainer"],
+    .main .block-container,
+    section.main > div {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        padding-top: 2.5rem !important;
     }
 
     [data-testid="stSidebarUserContent"] {
@@ -78,6 +96,42 @@ st.markdown(
     }
 
     /* ---------- Sidebar ---------- */
+
+    /* Hide the gray clear-all button but keep the dropdown arrow. */
+    section[data-testid="stSidebar"]
+    div[data-testid="stMultiSelect"]
+    button[aria-label="Clear all"] {
+        display: none !important;
+    }
+
+    /* Give the selected-values area more room. */
+    section[data-testid="stSidebar"]
+    div[data-testid="stMultiSelectTagsContainer"] {
+        width: calc(100% - 30px) !important;
+        max-width: calc(100% - 30px) !important;
+        flex: 1 1 auto !important;
+    }
+
+    /* Expand the container holding all selected tags. */
+    section[data-testid="stSidebar"]
+    span[role="group"][aria-label="Selected values"] {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        width: 100% !important;
+        max-width: none !important;
+    }
+
+    /* Let each pink tag use more horizontal space. */
+    section[data-testid="stSidebar"]
+    span[role="group"][aria-label="Selected values"] > * {
+        max-width: 225px !important;
+    }
+
+    /* Allow more of the text inside each tag to appear. */
+    section[data-testid="stSidebar"]
+    span[role="group"][aria-label="Selected values"] > * > span {
+        max-width: 190px !important;
+    }
 
     /* Sidebar headings, labels, and checkbox text. */
     section[data-testid="stSidebar"] h1,
@@ -292,6 +346,148 @@ def standard_layout(figure, height=420):
 
     return figure
 
+def build_composition_chart(dataframe):
+    category_names = {
+        "E": "General and rehabilitative health",
+        "F": "Mental health and crisis intervention",
+        "G": "Diseases and medical disciplines",
+        "H": "Medical research",
+    }
+
+    # Use the latest year so each organization appears once.
+    latest_year = dataframe["TAX_YEAR_ANALYSIS"].max()
+
+    latest_records = dataframe[
+        dataframe["TAX_YEAR_ANALYSIS"] == latest_year
+    ].copy()
+
+    composition = (
+        latest_records.groupby("NTEE_MAJOR")["EIN_CLEAN"]
+        .nunique()
+        .reindex(["E", "F", "G", "H"])
+        .fillna(0)
+        .astype(int)
+    )
+
+    composition = composition[composition > 0]
+
+    total_organizations = composition.sum()
+    shares = composition / total_organizations * 100
+
+    # Darkest color automatically goes to the largest category.
+    color_by_size = {
+        category: color
+        for category, color in zip(
+            composition.sort_values(ascending=False).index,
+            COMPOSITION_COLORS,
+        )
+    }
+
+    figure = go.Figure()
+
+    starting_angle = 180
+
+    for category, count in composition.items():
+        share = shares[category]
+        segment_width = 180 * share / 100
+        center_angle = starting_angle - segment_width / 2
+
+        figure.add_trace(
+            go.Barpolar(
+                r=[1],
+                theta=[center_angle],
+                width=[segment_width],
+                base=[0.58],
+                name=(
+                    f"{category} — {category_names[category]}: "
+                    f"{share:.0f}% ({count})"
+                ),
+                marker_color=color_by_size[category],
+                marker_line_color="#FFFFFF",
+                marker_line_width=4,
+                hovertemplate=(
+                    f"<b>{category} — "
+                    f"{category_names[category]}</b><br>"
+                    f"{share:.1f}%<br>"
+                    f"{count} organizations"
+                    "<extra></extra>"
+                ),
+            )
+        )
+
+        starting_angle -= segment_width
+
+    figure.update_layout(
+        height=225,
+        margin=dict(l=10, r=10, t=15, b=0),
+        paper_bgcolor="#FFFFFF",
+        plot_bgcolor="#FFFFFF",
+        font=dict(
+            color="#172033",
+            family="Arial",
+        ),
+        legend=dict(
+            orientation="v",
+            x=0.62,
+            y=0.82,
+            xanchor="left",
+            yanchor="top",
+            font=dict(size=12),
+        ),
+        polar=dict(
+            domain=dict(
+                x=[0.04, 0.58],
+                y=[0.00, 1],
+            ),
+            bgcolor="#FFFFFF",
+            radialaxis=dict(
+                visible=False,
+                range=[0, 1.58],
+            ),
+            angularaxis=dict(
+                visible=False,
+                rotation=0,
+                direction="counterclockwise",
+            ),
+        ),
+        annotations=[
+            # Main number positioned at the semicircle's center.
+            dict(
+                x=0.31,
+                y=0.50,
+                xref="paper",
+                yref="paper",
+                text=f"<b>{total_organizations:,}</b>",
+                showarrow=False,
+                xanchor="center",
+                yanchor="middle",
+                font=dict(
+                    size=27,
+                    color="#172033",
+                ),
+            ),
+
+            # Supporting label positioned separately.
+            dict(
+                x=0.31,
+                y=0.36,
+                xref="paper",
+                yref="paper",
+                text="organizations",
+                showarrow=False,
+                xanchor="center",
+                yanchor="middle",
+                font=dict(
+                    size=13,
+                    color="#667085",
+                ),
+            ),
+        ],
+        showlegend=True,
+        barmode="overlay",
+    )
+
+    return figure
 
 data = load_data()
 
@@ -311,7 +507,7 @@ selected_groups = st.sidebar.multiselect(
     "Health categories",
     options=available_groups,
     default=available_groups,
-    format_func=lambda value: NTEE_LABELS[value],
+    format_func=lambda value: SIDEBAR_NTEE_LABELS[value],
     key="health_categories",
 )
 
@@ -493,7 +689,32 @@ st.markdown(
         stroke: #172033 !important;
         -webkit-text-fill-color: #172033 !important;
     }
+    /* ---------- Compact sidebar width ---------- */
+    section[data-testid="stSidebar"] {
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
+    }
 
+    section[data-testid="stSidebar"] > div {
+        width: 290px !important;
+        min-width: 290px !important;
+        max-width: 290px !important;
+    }
+
+    /* Give sidebar controls more horizontal space. */
+    section[data-testid="stSidebar"] [data-testid="stSidebarContent"],
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    /* Make filter controls use all available sidebar width. */
+    section[data-testid="stSidebar"] [data-testid="stMultiSelect"],
+    section[data-testid="stSidebar"] [data-testid="stSelectbox"] {
+        width: 100% !important;
+        max-width: none !important;
+    }
 
     </style>
     """,
@@ -776,6 +997,27 @@ if selected_section == "Sector overview":
 
 
 elif selected_section == "Category comparison":
+    st.subheader("Balanced-panel composition")
+
+    st.caption(
+        "Distribution of organizations included in all three "
+        "tax years, by health category. Darker shades represent "
+        "larger shares."
+    )
+
+    composition_figure = build_composition_chart(filtered)
+
+    st.plotly_chart(
+        composition_figure,
+        use_container_width=True,
+        config={
+            "displayModeBar": False,
+            "responsive": True,
+        },
+    )
+
+    st.divider()
+
     st.subheader(
         "Median financial growth by health category"
     )
