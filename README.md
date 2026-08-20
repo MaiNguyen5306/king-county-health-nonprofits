@@ -79,9 +79,9 @@ Only the compact processed datasets required by the public dashboard are stored 
 
 ### Category Comparison
 
-- Median revenue growth by NTEE major health group
-- Median expense growth by NTEE major health group
-- Category sample sizes for interpretation
+- Balanced-panel composition by NTEE major health group
+- Median revenue and expense growth by health category
+- Category sample sizes and percentage shares for interpretation
 
 ### Organization Explorer
 
@@ -112,7 +112,7 @@ king-county-health-nonprofits/
 
 ## Technology Stack
 
-- **Python:** pandas, requests, XML parsing
+- **Python:** pandas, requests, ElementTree XML parsin
 - **Visualization:** Plotly, Matplotlib, Seaborn
 - **Application:** Streamlit
 - **Version control and deployment:** Git, GitHub, Streamlit Community Cloud
