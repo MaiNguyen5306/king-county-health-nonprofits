@@ -489,6 +489,52 @@ def build_composition_chart(dataframe):
 
     return figure
 
+def format_organization_name(name):
+    """Convert uppercase IRS organization names to readable title case."""
+    formatted = str(name).strip().title()
+
+    # Correct possessives produced by Python's title() method.
+    formatted = formatted.replace("'S", "'s")
+
+    lowercase_words = {
+        "And",
+        "At",
+        "For",
+        "In",
+        "Of",
+        "On",
+        "The",
+        "To",
+    }
+
+    preserved_acronyms = {
+        "Aids": "AIDS",
+        "Hiv": "HIV",
+        "Scca": "SCCA",
+        "Usa": "USA",
+        "Uw": "UW",
+        "Ymca": "YMCA",
+        "Ywca": "YWCA",
+    }
+
+    words = formatted.split()
+
+    for index, word in enumerate(words):
+        plain_word = word.strip(",.()")
+
+        if plain_word in preserved_acronyms:
+            words[index] = word.replace(
+                plain_word,
+                preserved_acronyms[plain_word],
+            )
+        elif index > 0 and plain_word in lowercase_words:
+            words[index] = word.replace(
+                plain_word,
+                plain_word.lower(),
+            )
+
+    return " ".join(words)
+
 data = load_data()
 
 
@@ -1167,10 +1213,18 @@ else:
         .to_dict()
     )
 
+    display_names = {
+        ein: format_organization_name(name)
+        for ein, name in latest_names.items()
+    }
+
     selected_ein = st.selectbox(
         "Select an organization",
-        options=sorted(latest_names),
-        format_func=lambda value: latest_names[value],
+        options=sorted(
+            latest_names,
+            key=lambda ein: display_names[ein],
+        ),
+        format_func=lambda ein: display_names[ein],
     )
 
     organization_history = (
