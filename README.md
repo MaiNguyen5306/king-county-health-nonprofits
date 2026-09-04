@@ -1,16 +1,17 @@
 # Financial Trends of King County Health Nonprofits
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://king-county-health-nonprofits.streamlit.app/)
+> **[Explore the Live Streamlit Dashboard](https://king-county-health-nonprofits.streamlit.app/)**  
+> Hosted on Streamlit Community Cloud; the dashboard may take a moment to wake after inactivity.
 
-An end-to-end data analytics project examining financial trends among health-related nonprofit organizations in King County, Washington. The project transforms IRS Form 990 XML filings into a reproducible analytical panel and an interactive Streamlit dashboard.
+**Technology Stack**
 
-## Live Dashboard
+- **Python:** pandas, requests, ElementTree
+- **Visualization:** Plotly, Matplotlib, Seaborn
+- **Application:** Streamlit
+- **Data:** IRS Form 990 XML and CSV
+- **Deployment:** GitHub and Streamlit Community Cloud
 
-Explore the public dashboard:
-
-**[King County Health Nonprofits Dashboard](https://king-county-health-nonprofits.streamlit.app/)**
-
-The dashboard supports health-category filtering, year-specific sector snapshots, a sensitivity analysis for the SCCAâ€“Fred Hutch structural change, category comparisons, organization-level exploration, and filtered-data downloads.
+An end-to-end data analytics project examining financial trends among health-related nonprofit organizations in King County, Washington. The project transforms complex IRS Form 990 XML filings into a validated analytical panel and an interactive dashboard.
 
 ## Business Question
 
@@ -22,11 +23,11 @@ The final balanced panel contains **89 organizations and 267 Form 990 filings**,
 
 Key findings include:
 
-- Aggregate revenue increased **41.4%** from 2021 to 2023, but the increase fell to **5.4%** when the SCCAâ€“Fred Hutch structural change was excluded.
+- Aggregate revenue increased **41.4%** from 2021 to 2023, but the increase fell to **5.4%** when the SCCA–Fred Hutch structural change was excluded.
 - The median organization recorded **15.8% revenue growth** and **22.2% expense growth**, indicating that expenses generally grew faster than revenue.
-- Organizations reporting operating deficits increased from **24 (27%) in 2021** to **41 (46%) in 2023**.
-- Revenue was highly concentrated in 2023: the largest organization represented **44.5%** of balanced-panel revenue, while the ten largest represented **89.3%**.
-- Category-level results should be interpreted carefully because the balanced samples for disease-focused and medical-research organizations are small.
+- Organizations reporting operating deficits increased from **24 organizations (27%)** in 2021 to **41 organizations (46%)** in 2023.
+- The largest organization represented **44.5%** of 2023 balanced-panel revenue, while the ten largest represented **89.3%**.
+- Category findings for disease-focused and medical-research organizations should be interpreted cautiously because their balanced samples are small.
 
 These findings describe reported financial conditions and should not be interpreted as measures of healthcare quality, community impact, or organizational effectiveness.
 
@@ -62,7 +63,7 @@ Only the compact processed datasets required by the public dashboard are stored 
 3. Audit the IRS archive inventory and map filing object IDs to ZIP archives.
 4. Download and validate 34 required IRS ZIP archives.
 5. Extract the selected Form 990 XML filings.
-6. Parse organization, tax-period, financial, and operational fields across multiple IRS XML schema versions.
+6. Parsed complex, multi-schema IRS Form 990 XML filings using **ElementTree** to extract organization, tax-period, financial, and operational fields.
 7. Validate filing counts, duplicate organization-period records, field coverage, and unusual tax periods.
 8. Resolve duplicate organization-year filings and flag short reporting periods.
 9. Create a full analytical panel and a balanced 2021â€“2023 cohort.
@@ -109,14 +110,6 @@ king-county-health-nonprofits/
   requirements.txt     # Python dependencies
   README.md
 ```
-
-## Technology Stack
-
-- **Python:** pandas, requests, ElementTree XML parsing
-- **Visualization:** Plotly, Matplotlib, Seaborn
-- **Application:** Streamlit
-- **Version control and deployment:** Git, GitHub, Streamlit Community Cloud
-- **Data formats:** XML and CSV
 
 ## Run Locally
 
