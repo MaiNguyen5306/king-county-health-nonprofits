@@ -95,20 +95,23 @@ Only the compact processed datasets required by the public dashboard are stored 
 
 ```text
 king-county-health-nonprofits/
-  .streamlit/          # Streamlit theme configuration
-  dashboard/
-    app.py             # Interactive Streamlit application
-    data/              # Compact deployment datasets
-  data/
-    raw/               # Local raw source files (Git-ignored)
-    processed/         # Local analytical outputs (Git-ignored)
-  docs/                # Project documentation
-  notebooks/           # Exploratory analysis
-  reports/figures/     # Exported static visualizations
-  sql/                 # SQL work
-  src/                 # Download, extraction, parsing, and analysis scripts
-  requirements.txt     # Python dependencies
-  README.md
+├── .streamlit/
+│   └── config.toml          # Streamlit theme configuration
+├── dashboard/
+│   ├── app.py               # Interactive Streamlit application
+│   └── data/                # Compact dashboard deployment datasets
+├── data/
+│   ├── raw/                 # Local raw source files (Git-ignored)
+│   └── processed/           # Local analytical outputs (Git-ignored)
+├── docs/                    # Project documentation
+├── notebooks/               # Exploratory analysis
+├── outputs/                 # Generated analytical outputs
+├── reports/
+│   └── figures/             # Exported static visualizations
+├── sql/                     # SQL queries
+├── src/                     # Download, extraction, parsing, and analysis scripts
+├── requirements.txt         # Python dependencies
+└── README.md                # Project overview and instructions
 ```
 
 ## Run Locally
